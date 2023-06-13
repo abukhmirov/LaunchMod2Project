@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MessageLogger
+namespace MessageLogger.Data
 {
     public class MessageLoggerContext : DbContext
     {
@@ -14,7 +14,7 @@ namespace MessageLogger
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            var connectionString = "Host=localhost;Username=postgres;Password=password123;Database=MessageLogger";
+            var connectionString = "Host=localhost;Username=postgres;Password=password123;Database=MessageLogger1";
             optionsBuilder.UseNpgsql(connectionString)
                 .UseSnakeCaseNamingConvention();
         }

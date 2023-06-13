@@ -34,23 +34,22 @@ namespace MessageLogger.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     content = table.Column<string>(type: "text", nullable: false),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    message_user_id = table.Column<int>(type: "integer", nullable: false)
+                    user_id = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_messages", x => x.id);
                     table.ForeignKey(
-                        name: "fk_messages_users_message_user_id",
-                        column: x => x.message_user_id,
+                        name: "fk_messages_users_user_id",
+                        column: x => x.user_id,
                         principalTable: "users",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "id");
                 });
 
             migrationBuilder.CreateIndex(
-                name: "ix_messages_message_user_id",
+                name: "ix_messages_user_id",
                 table: "messages",
-                column: "message_user_id");
+                column: "user_id");
         }
 
         /// <inheritdoc />

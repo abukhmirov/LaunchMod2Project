@@ -4,19 +4,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MessageLogger
+namespace MessageLogger.Data
 {
     public class Message
     {
         public int Id { get; set; }
         public string Content { get; private set; }
         public DateTime CreatedAt { get; private set; }
-        public User MessageUser { get; private set; }
+        //public User MessageUser { get; private set; }
+       // public int UserId { get; set; }
 
         public Message(string content)
         {
             Content = content;
-            CreatedAt = DateTime.Now;
+            CreatedAt = DateTime.Now.ToUniversalTime();
         }
     }
 }
