@@ -1,9 +1,9 @@
 ﻿using MessageLogger.Data;
 using Microsoft.EntityFrameworkCore;
 
-using (var context = new MessageLoggerContext())
 
- // LEAVE THE WRITELINES TO PRESERVE THE UX
+
+// LEAVE THE WRITELINES TO PRESERVE THE UX
 Console.WriteLine("Welcome to Message Logger!");
 Console.WriteLine();
 Console.WriteLine("Let's create a user pofile for you.");
@@ -27,11 +27,11 @@ using (var context = new MessageLoggerContext())
     Console.WriteLine("To log out of your user profile, enter `log out`.");
     Console.WriteLine();
     Console.Write("Add a message (or `quit` to exit): ");
-    
+
     // MESSAGE CREATION AND ADDING TO MESSAGES LIST IN USER
-   
+
     string userInput = Console.ReadLine();
-   
+
     List<User> users = new List<User>() { user };
 
     while (userInput.ToLower() != "quit")
@@ -61,22 +61,22 @@ using (var context = new MessageLoggerContext())
         if (userInput.ToLower() == "new")
         {
             Console.Write("What is your name? ");
-           
+
             name = Console.ReadLine();
-            
+
             Console.Write("What is your username? (one word, no spaces!) ");
-           
+
             username = Console.ReadLine();
-           
+
             user = new User(name, username);
-           
+
             users.Add(user);
-          
+
             // WRITE USER INTO DATABASE
 
             context.Users.Add(user);
             context.SaveChanges();
-           
+
             user = context.Users.Single(u => u.Username == username);
 
 
@@ -115,7 +115,74 @@ using (var context = new MessageLoggerContext())
 
     Console.WriteLine("Thanks for using Message Logger!");
     // PULL MESSAGE COUNT AND USERS FROM DATABASE
-    foreach (var u in users)
+
+    var usersOrderedByMessageCount = context.Users.Include(u => u.Messages)
+    .OrderByDescending(u => u.Messages.Count);
+
+    Console.WriteLine();
+    Console.WriteLine("Users ordered by number of messages created (most to least):");
+    foreach (var u in usersOrderedByMessageCount)
+    {
+        Console.WriteLine($"{u.Name} wrote {u.Messages.Count} messages.");
+    }
+
+
+    var mostCommonMessages = context.Messages
+     .GroupBy(m => m.Content)
+     .OrderByDescending(g => g.Count())
+     .Select(g => new { Message = g.Key, Count = g.Count() })
+     .ToList();
+
+
+    // Find the most common message by user
+    var mostCommonMessagesByUser = context.Users.Include(u => u.Messages)
+        .Select(u => new
+        {
+            UserName = u.Username,
+            MostCommonMessage = u.Messages
+                .GroupBy(m => m.Content) // Group messages by content for each user
+                .OrderByDescending(g => g.Count()) // Order groups by count in descending order
+                .Select(g => new { Message = g.Key, Count = g.Count() }) // Select message and count
+                .FirstOrDefault() // Take the first (most common) message group, or null if no messages
+        })
+        .Where(u => u.MostCommonMessage != null) // Exclude users with no messages
+        .ToList();
+
+    
+    //Bonus statistic of Average Messages per user per day!
+    var averageMessagesPerUserPerDay = context.Users.Include(u => u.Messages)
+    .Select(u => new
+    {
+        UserName = u.Username,
+        MessageCount = u.Messages.Count,
+        ActiveDays = u.Messages.Select(m => m.CreatedAt.Date).Distinct().Count()
+    })
+    .ToList();
+
+    double totalAverage = averageMessagesPerUserPerDay
+        .Select(u => (double)u.MessageCount / u.ActiveDays)
+        .Average();
+
+
+
+    Console.WriteLine();
+    Console.WriteLine("Most common messages:");
+
+    foreach (var message in mostCommonMessages)
+    {
+        Console.WriteLine($"Message: {message.Message}, Count: {message.Count}");
+    }
+
+    Console.WriteLine();
+    Console.WriteLine("Most common messages by user:");
+    foreach (var userMessage in mostCommonMessagesByUser)
+    {
+        Console.WriteLine($"User: {userMessage.UserName}, Message: {userMessage.MostCommonMessage.Message}, Count: {userMessage.MostCommonMessage.Count}");
+    }
+
+    Console.WriteLine();
+    Console.WriteLine("All Messages from the last session:");
+    foreach (var u in users) // Try to have messages shown for existing users relogging in 
     {
         Console.WriteLine($"{u.Name} wrote {u.Messages.Count} messages.");
     }
