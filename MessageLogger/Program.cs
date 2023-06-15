@@ -140,15 +140,15 @@ using (var context = new MessageLoggerContext())
         {
             UserName = u.Username,
             MostCommonMessage = u.Messages
-                .GroupBy(m => m.Content) // Group messages by content for each user
-                .OrderByDescending(g => g.Count()) // Order groups by count in descending order
-                .Select(g => new { Message = g.Key, Count = g.Count() }) // Select message and count
-                .FirstOrDefault() // Take the first (most common) message group, or null if no messages
+                .GroupBy(m => m.Content) 
+                .OrderByDescending(g => g.Count()) 
+                .Select(g => new { Message = g.Key, Count = g.Count() }) 
+                .FirstOrDefault() 
         })
-        .Where(u => u.MostCommonMessage != null) // Exclude users with no messages
+        .Where(u => u.MostCommonMessage != null) 
         .ToList();
 
-    
+
     //Bonus statistic of Average Messages per user per day!
     var averageMessagesPerUserPerDay = context.Users.Include(u => u.Messages)
     .Select(u => new
@@ -181,7 +181,7 @@ using (var context = new MessageLoggerContext())
     }
 
     Console.WriteLine();
-    Console.WriteLine("All Messages from the last session:");
+    Console.WriteLine("Messages from the last session:");
     foreach (var u in users) // Try to have messages shown for existing users relogging in 
     {
         Console.WriteLine($"{u.Name} wrote {u.Messages.Count} messages.");
