@@ -148,6 +148,14 @@ using (var context = new MessageLoggerContext())
         .Where(u => u.MostCommonMessage != null) 
         .ToList();
 
+   // Messages by Hour to use for the hour with most messages
+    var messagesByHour = context.Messages
+    .GroupBy(m => m.CreatedAt.Hour)
+    .Select(g => new { Hour = g.Key, Count = g.Count() })
+    .OrderByDescending(g => g.Count)
+    .First();
+
+
 
     //Bonus statistic of Average Messages per user per day!
     var averageMessagesPerUserPerDay = context.Users.Include(u => u.Messages)
@@ -179,6 +187,12 @@ using (var context = new MessageLoggerContext())
     {
         Console.WriteLine($"User: {userMessage.UserName}, Message: {userMessage.MostCommonMessage.Message}, Count: {userMessage.MostCommonMessage.Count}");
     }
+
+    Console.WriteLine();
+    Console.WriteLine($"Hour with the most messages: {messagesByHour.Hour}:00 - {messagesByHour.Hour + 1}:00");
+
+    Console.WriteLine();
+    Console.WriteLine($"Average messages per user per day: {totalAverage}");
 
     Console.WriteLine();
     Console.WriteLine("Messages from the last session:");
